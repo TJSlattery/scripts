@@ -7,11 +7,14 @@ import pymongo
 from requests.auth import HTTPDigestAuth
 from pymongo.mongo_client import MongoClient
 
-# Load environment variables
+#Load environment variables -- ✨EDIT THESE BEFORE RUNNING✨
 group_id = os.getenv('GROUPID')
 public_key = os.getenv('PUBLICKEY')
 private_key = os.getenv('PRIVATEKEY')
 atlas_pw = os.getenv('ATLASPW')
+atlas_user = os.getenv('ATLASUSER')
+
+print(atlas_user)
 
 # Headers for requests
 headers = {
@@ -109,8 +112,10 @@ while True:
     
     if cluster:
         state_name = cluster['stateName']
+        cluster_id = cluster['id']
         if state_name == 'IDLE':
             print(f"Cluster {cluster_name} is now IDLE.")
+            print(f"The id for the cluster '{cluster_name}' is: {cluster_id}")  # Print the cluster id
             break
         else:
             elapsed_time = time.time() - start_time
@@ -121,7 +126,7 @@ while True:
     time.sleep(10)
 
 # Load sample data
-mongouri = f"mongodb+srv://tom:{atlas_pw}@{cluster_name}.fgc5a.mongodb.net/"
+mongouri = f"mongodb+srv://{atlas_user}:{atlas_pw}@{cluster_name}.fgc5a.mongodb.net/"
 dbname = "education"
 collectionname = "student_grades"
 
@@ -284,7 +289,7 @@ while True:
     time.sleep(10)  # Delay between polls
 
 # Query online archive
-archived_cluster_uri = f"mongodb://tom:{atlas_pw}@atlas-online-archive-{online_archive_id}-fgc5a.a.query.mongodb.net/?ssl=true&authSource=admin"
+archived_cluster_uri = f"mongodb://{atlas_user}:{atlas_pw}@archived-atlas-online-archive-{cluster_id}-fgc5a.a.query.mongodb.net/?ssl=true&authSource=admin"
 
 client = pymongo.MongoClient(archived_cluster_uri)
 db = client['education']
@@ -294,7 +299,7 @@ archived_doc_count = collection.count_documents({})
 print(f"Number of documents in the online archive: {archived_doc_count}")
 
 # Query original cluster
-original_cluster_uri = f"mongodb+srv://tom:{atlas_pw}@{cluster_name}.fgc5a.mongodb.net/"
+original_cluster_uri = f"mongodb+srv://{atlas_user}:{atlas_pw}@{cluster_name}.fgc5a.mongodb.net/"
 client = pymongo.MongoClient(original_cluster_uri)
 db = client['education']
 collection = db['student_grades']
