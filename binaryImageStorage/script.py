@@ -2,7 +2,7 @@ import os
 import zlib
 import time
 from pymongo import MongoClient
-from pymongo.binary import Binary
+from bson import Binary
 from PIL import Image
 import io
 
@@ -96,15 +96,15 @@ def query_and_save_image(collection, query, output_directory):
 # Main function to run the script
 if __name__ == "__main__":
     # MongoDB connection details
-    MONGODB_URI = "your_mongodb_atlas_connection_string"
-    DATABASE_NAME = "your_database_name"
-    COLLECTION_NAME = "your_collection_name"
+    MONGODB_URI = os.environ.get("MONGODB_URI")
+    DATABASE_NAME = "images"
+    COLLECTION_NAME = "starwars"
 
     # Directory containing images
-    IMAGE_DIRECTORY = "/path/to/your/images"
+    IMAGE_DIRECTORY = "./images"
 
     # Directory to save queried images
-    OUTPUT_DIRECTORY = "/path/to/save/queried/images"
+    OUTPUT_DIRECTORY = "./output"
 
     # Connect to MongoDB
     collection = connect_to_mongodb(MONGODB_URI, DATABASE_NAME, COLLECTION_NAME)
@@ -113,5 +113,5 @@ if __name__ == "__main__":
     process_images(IMAGE_DIRECTORY, collection)
 
     # Query and save an image
-    query = {"metadata.original_name": "example.jpg"}  # Change this to match your query
+    query = {"metadata.original_name": "Star_Wars_Logo.png"}  # Change this to match your query
     query_and_save_image(collection, query, OUTPUT_DIRECTORY)

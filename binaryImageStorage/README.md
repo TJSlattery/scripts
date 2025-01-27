@@ -48,7 +48,7 @@ pip install pymongo pillow
 
 2. **Edit the Configuration**
    Open the script and update the following placeholders:
-   - `MONGODB_URI`: Your MongoDB Atlas connection string.
+   - `MONGODB_URI`: Your MongoDB Atlas connection string stored as the environment variable **MONGODB_URI**.
    - `DATABASE_NAME`: Name of the database to store images.
    - `COLLECTION_NAME`: Name of the collection to store documents.
    - `IMAGE_DIRECTORY`: Path to the directory containing images.
@@ -127,5 +127,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 - [zlib](https://docs.python.org/3/library/zlib.html) for lossless compression.
 
 ---
-
-Feel free to use, customize, and contribute!
