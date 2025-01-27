@@ -1,10 +1,13 @@
 import os
 import zlib
 import time
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
+from pymongo.errors import DuplicateKeyError
 from bson import Binary
 from PIL import Image
 import io
+
+script_start_time = time.time()
 
 # Step 1: Connect to MongoDB Atlas
 def connect_to_mongodb(uri, database_name, collection_name):
@@ -15,6 +18,19 @@ def connect_to_mongodb(uri, database_name, collection_name):
     elapsed_time = time.time() - start_time
     print(f"Connected to MongoDB in {elapsed_time:.2f} seconds")
     return collection
+
+# Function to set up a unique index
+def ensure_unique_index(collection):
+    """
+    Ensures that a unique index is created on the `metadata.original_name` field.
+    """
+    print("Ensuring unique index on metadata.original_name...")
+    collection.create_index(
+        [("metadata.original_name", ASCENDING)],  # Field to index
+        unique=True,  # Ensure uniqueness
+        name="unique_original_name_index"  # Optional: give the index a name
+    )
+    print("Unique index created (if not already present).")
 
 # Step 2: Compress an image losslessly
 def compress_image_losslessly(image_path):
@@ -58,7 +74,13 @@ def process_images(directory, collection):
                             "directory": root
                         }
                     }
-                    collection.insert_one(document)
+                    try:
+                        collection.insert_one(document)
+                        elapsed_time = time.time() - start_time
+                        print(f"Inserted {file_path} into MongoDB in {elapsed_time:.2f} seconds")
+                    except DuplicateKeyError:
+                        print(f"Item is already added to MongoDB: {document['metadata']['original_name']}")
+                        continue
                     elapsed_time = time.time() - start_time
                     print(f"Inserted {file_path} into MongoDB in {elapsed_time:.2f} seconds")
                 except Exception as e:
@@ -109,9 +131,17 @@ if __name__ == "__main__":
     # Connect to MongoDB
     collection = connect_to_mongodb(MONGODB_URI, DATABASE_NAME, COLLECTION_NAME)
 
+    #Ensure a unique index is built on original file name
+    ensure_unique_index(collection)
+
     # Process and store images
     process_images(IMAGE_DIRECTORY, collection)
 
     # Query and save an image
     query = {"metadata.original_name": "Star_Wars_Logo.png"}  # Change this to match your query
     query_and_save_image(collection, query, OUTPUT_DIRECTORY)
+
+    #Print total execution time
+    print(f"Total execution time: {time.time() - script_start_time:.2f} seconds")
+
+    
